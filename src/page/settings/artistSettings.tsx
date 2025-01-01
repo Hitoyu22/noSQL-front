@@ -16,7 +16,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/multi-select"; 
@@ -30,7 +29,9 @@ const artistProfileSchema = z.object({
     .string()
     .min(4, { message: "La biographie doit comporter au moins 4 caractères" })
     .max(160, { message: "La biographie ne peut pas dépasser 160 caractères" }),
-  profilePictureUrl: z.string().url({ message: "Merci d'entrer une URL valide pour l'image de profil" }).optional(),
+  profilePicture: z
+    .instanceof(File)
+    .optional(),  // Image peut être optionnelle
   genres: z.array(z.string()).optional(), 
 });
 
@@ -40,15 +41,14 @@ const ArtistProfileSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [artistExists, setArtistExists] = useState(false);
   const [artistProfile, setArtistProfile] = useState<any>(null);
-  const [genres, setGenres] = useState<any[]>([]); 
-
+  const [genres, setGenres] = useState<any[]>([]);
 
   const form = useForm<ArtistProfileFormValues>({
     resolver: zodResolver(artistProfileSchema),
     defaultValues: {
       name: "",
       bio: "",
-      profilePictureUrl: "",
+      profilePicture: undefined, // Champ d'image par défaut undefined
       genres: [],
     },
   });
@@ -81,12 +81,12 @@ const ArtistProfileSettings: React.FC = () => {
         const response = await axiosInstance.get(`/artists/user/${userId}`);
         if (response.status === 200) {
           setArtistExists(true);
-          setArtistProfile(response.data); 
+          setArtistProfile(response.data);
           form.reset({
-            name: response.data.name,
-            bio: response.data.bio,
-            profilePictureUrl: response.data.profilePictureUrl,
-            genres: response.data.genres, 
+            name: response.data.name || "",
+            bio: response.data.bio || "",
+            profilePicture: undefined,  // Définit l'image comme undefined (elle ne vient pas encore du formulaire)
+            genres: response.data.genres || [],
           });
         }
       } catch (error: any) {
@@ -115,7 +115,20 @@ const ArtistProfileSettings: React.FC = () => {
         throw new Error("ID utilisateur ou ID artiste manquant");
       }
 
-      await axiosInstance.put(`/artists/${artistProfile._id}`, data);
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("bio", data.bio);
+      formData.append("genres", (data.genres || []).join(','));
+      if (data.profilePicture) {
+        formData.append("profilePicture", data.profilePicture); 
+      }
+
+      await axiosInstance.put(`/artists/${artistProfile._id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", 
+        },
+      });
+
       toast({
         title: "Succès",
         description: "Profil d'artiste mis à jour avec succès.",
@@ -141,7 +154,7 @@ const ArtistProfileSettings: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col gap-8 bg-muted/40 p-10">
+    <div className="flex min-h-screen flex-col gap-8 bg-muted/">
       <div className="mx-auto grid w-full max-w-6xl gap-2">
         <h1 className="text-3xl font-semibold">Paramètres</h1>
       </div>
@@ -171,74 +184,65 @@ const ArtistProfileSettings: React.FC = () => {
                   <AddArtist />
                 </div>
               ) : (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nom de l'artiste</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Entrez le nom de l'artiste"
-                              {...field}
-                              disabled={loading}
-                            />
-                          </FormControl>
-                          <FormDescription>Nom de l'artiste visible publiquement.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom de l'artiste</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="bio"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Biographie</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Parlez-nous de votre art"
-                              className="resize-none"
-                              {...field}
-                              disabled={loading}
-                            />
-                          </FormControl>
-                          <FormDescription>Une courte biographie à propos de votre art.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Biographie</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="profilePictureUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Image de profil</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Entrez l'URL de votre image de profil"
-                              {...field}
-                              disabled={loading}
-                            />
-                          </FormControl>
-                          <FormDescription>Une image de profil pour votre page.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <FormField
+                control={form.control}
+                name="profilePicture"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image de Profil</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="genres"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Genres</FormLabel>
-                          <FormControl>
-                            <MultiSelect
+              <FormField
+                control={form.control}
+                name="genres"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Genres</FormLabel>
+                    <FormControl>
+                    <MultiSelect
                               options={genres}
                               onValueChange={field.onChange}
                               defaultValue={field.value}
@@ -247,23 +251,24 @@ const ArtistProfileSettings: React.FC = () => {
                               modalPopover={true}
                               variant={"default"}
                             />
-                          </FormControl>
-                          <FormDescription>Les genres de musique associés à votre profil.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <Button type="submit" disabled={loading}>
-                      {loading ? "Enregistrement..." : "Mettre à jour le profil"}
-                    </Button>
-                  </form>
-                </Form>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              <div className="flex justify-end space-x-4">
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Chargement..." : artistExists ? "Mettre à jour" : "Créer un profil"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+        </CardContent>
+      </Card>
+    </div>
+  </div>
     </div>
   );
 };

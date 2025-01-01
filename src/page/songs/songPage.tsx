@@ -130,7 +130,7 @@ export function SongPage() {
 
   const handleShare = () => {
     if (song) {
-      const songUrl = `${window.location.origin}/song/${song._id}`; // Dynamique en fonction de l'environnement
+      const songUrl = `${window.location.origin}/song/${song._id}`;
 
       toast({
         title: "Lien de la chanson partagé",
@@ -159,8 +159,8 @@ export function SongPage() {
             </Button>
           </div>
         ),
-        duration: 4000, 
-        style: { maxWidth: "500px" }, 
+        duration: 4000,
+        style: { maxWidth: "500px" },
       });
     }
   };
@@ -195,12 +195,21 @@ export function SongPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <Avatar className="w-20 h-20">
-              <AvatarImage src={song.artist.profilePictureUrl} alt={song.artist.name} />
-              <AvatarFallback>Artiste</AvatarFallback>
+              {song.artist && song.artist.profilePictureUrl ? (
+                <AvatarImage src={song.artist.profilePictureUrl} alt={song.artist.name} />
+              ) : (
+                <AvatarFallback>Artiste</AvatarFallback>
+              )}
             </Avatar>
             <div>
-              <h2 className="text-2xl font-semibold">{song.artist.name}</h2>
-              <p className="text-sm text-gray-600 mt-2">{song.artist.bio}</p>
+              {song.artist ? (
+                <>
+                  <h2 className="text-2xl font-semibold">{song.artist.name}</h2>
+                  <p className="text-sm text-gray-600 mt-2">{song.artist.bio}</p>
+                </>
+              ) : (
+                <div>Artiste non trouvé</div>
+              )}
             </div>
           </div>
 
@@ -235,9 +244,9 @@ export function SongPage() {
                   <span>Partager</span>
                 </DropdownMenuItem>
                 <Link to={`/artist/${song.artist._id}`}>
-                <DropdownMenuItem>
-                  <span>Voir le profil de l'artiste</span>
-                </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Voir le profil de l'artiste</span>
+                  </DropdownMenuItem>
                 </Link>
               </DropdownMenuGroup>
             </DropdownMenuContent>

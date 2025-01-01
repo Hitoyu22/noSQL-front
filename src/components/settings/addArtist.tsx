@@ -18,10 +18,10 @@ import { MultiSelect } from "@/components/multi-select";
 
 export function AddArtist() {
   const [genres, setGenres] = useState<any[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]); 
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [artistName, setArtistName] = useState<string>("");
   const [bio, setBio] = useState<string>("");
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -45,28 +45,31 @@ export function AddArtist() {
   const resetForm = () => {
     setArtistName("");
     setBio("");
-    setProfilePictureUrl("");
+    setProfilePicture(null);
     setSelectedGenres([]); 
     setIsSuccess(false);
   };
 
   const handleSave = async () => {
-    if (!artistName || !bio || !profilePictureUrl || selectedGenres.length === 0) {
+    if (!artistName || !bio || !profilePicture || selectedGenres.length === 0) {
       alert("Veuillez remplir tous les champs");
       return;
     }
 
     setIsLoading(true);
-    const newArtist = {
-      name: artistName,
-      bio: bio,
-      profilePictureUrl: profilePictureUrl,
-      genres: selectedGenres, 
-      userId: localStorage.getItem("user"), 
-    };
+    const formData = new FormData();
+    formData.append("name", artistName);
+    formData.append("bio", bio);
+    formData.append("profilePicture", profilePicture);
+    formData.append("genres", selectedGenres.join(","));
+    formData.append("userId", localStorage.getItem("user") || "");
 
     try {
-      const response = await axiosInstance.post("/artists", newArtist);
+      const response = await axiosInstance.post("/artists", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log("Artiste ajouté avec succès:", response.data);
       setIsSuccess(true);
       alert("L'artiste a été ajouté avec succès !");
@@ -120,13 +123,13 @@ export function AddArtist() {
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="profilePictureUrl" className="text-right">
-              URL de la photo de profil
+            <Label htmlFor="profilePicture" className="text-right">
+              Photo de profil
             </Label>
             <Input
-              id="profilePictureUrl"
-              value={profilePictureUrl}
-              onChange={(e) => setProfilePictureUrl(e.target.value)}
+              id="profilePicture"
+              type="file"
+              onChange={(e) => setProfilePicture(e.target.files ? e.target.files[0] : null)}
               className="col-span-3"
             />
           </div>

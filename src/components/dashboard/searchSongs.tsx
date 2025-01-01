@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
 import instanceAxios from "@/context/axiosInstance"; 
-import { Link } from "react-router-dom"; // Utilisation de Link pour la navigation
+import { Link } from "react-router-dom";
 
 interface Artist {
   name: string;
@@ -116,7 +116,7 @@ export function SearchSongs() {
           ) : songs.length === 0 ? (
             <p>Aucune musique ne correspond à votre recherche</p>
           ) : (
-            songs.slice(0, 3).map((song) => ( // Limite à 3 musiques
+            songs.slice(0, 3).map((song) => ( 
               <Link key={song._id} to={`/song/${song._id}`}>
                 <div className="flex items-center space-x-4 p-2 hover:bg-gray-100 cursor-pointer transition-colors">
                   <img
@@ -126,15 +126,16 @@ export function SearchSongs() {
                   />
                   <div>
                     <span className="font-semibold">{song.title}</span>
-                    {song.artist.name && (
+                    {song.artist && song.artist.name ? (
                       <div className="text-sm text-gray-500">{song.artist.name}</div>
+                    ) : (
+                      <div className="text-sm text-gray-500">Artiste inconnu</div> 
                     )}
-                    
                   </div>
                 </div>
               </Link>
-            ))
-          )}
+            )))
+          }
         </div>
       </DialogContent>
     </Dialog>

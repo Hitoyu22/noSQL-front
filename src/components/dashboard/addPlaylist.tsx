@@ -24,6 +24,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
   const [playlistName, setPlaylistName] = useState<string>("");
   const [playlistDescription, setPlaylistDescription] = useState<string>("");
   const [isPublic, setIsPublic] = useState<boolean>(false);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -31,6 +32,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
     setPlaylistName("");
     setPlaylistDescription("");
     setIsPublic(false);
+    setCoverImage(null);
     setIsSuccess(false);
   };
 
@@ -41,15 +43,22 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
     }
 
     setIsLoading(true);
-    const newPlaylist = {
-      name: playlistName,
-      description: playlistDescription,
-      isPublic,
-      user: userId,
-    };
+    const formData = new FormData();
+    formData.append("name", playlistName);
+    formData.append("description", playlistDescription);
+    formData.append("isPublic", isPublic.toString());
+    formData.append("user", userId);
+
+    if (coverImage) {
+      formData.append("coverImageUrl", coverImage);
+    }
 
     try {
-      const response = await axiosInstance.post("/playlists/", newPlaylist);
+      const response = await axiosInstance.post("/playlists/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       console.log("Playlist ajoutée avec succès:", response.data);
       setIsSuccess(true);
     } catch (error) {
@@ -96,6 +105,18 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
               id="playlistDescription"
               value={playlistDescription}
               onChange={(e) => setPlaylistDescription(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="coverImageUrl" className="text-right">
+              Image de couverture
+            </Label>
+            <Input
+              id="coverImageUrl"
+              type="file"
+              onChange={(e) => setCoverImage(e.target.files ? e.target.files[0] : null)}
               className="col-span-3"
             />
           </div>
