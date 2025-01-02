@@ -9,6 +9,8 @@ import { SongPage } from "./page/songs/songPage";
 import { ArtistPage } from "./page/artist/artistPage";
 import { PlaylistPage } from "./page/playlist/playlistPage";
 import { Toaster } from "./components/ui/toaster";
+import { FavoriteArtistsPage } from "./page/artist/favoriteArtistePage";
+import  LogoutPage  from "./page/login/logoutPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const token = localStorage.getItem("token");
@@ -25,6 +27,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path='/logout' element={<LogoutPage />} />
 
       <Route
         path="/*"
@@ -51,6 +54,7 @@ function ProtectedLayout() {
         <Route path="/song/:id" element={<SongPage />}/>
         <Route path="/artist/:id" element={<ArtistPage />}/>
         <Route path="/playlist/:id" element={<PlaylistPage />}/>
+        <Route path="/artist/favorite" element={<FavoriteArtistsPage />} />
       </Routes>
     </div>
   );

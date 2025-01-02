@@ -6,7 +6,7 @@ import instanceAxios from "@/context/axiosInstance";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Play, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Genre {
@@ -122,7 +122,7 @@ export function ArtistPage() {
       <div
         className="relative w-full h-96 bg-cover bg-center overflow-hidden"
       >
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="absolute inset-0" style={{ backgroundImage: `url(${artist.profilePictureUrl})` }}></div>
         <div className="absolute bottom-8 left-8">
           <h1 className="text-4xl font-bold text-white">{artist.name}</h1>
           <p className="text-lg mt-2 text-gray-300">{artist.bio}</p>
@@ -159,10 +159,7 @@ export function ArtistPage() {
               <div className="flex items-center space-x-4">
                 <div className="text-lg text-gray-600">{index + 1}</div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" className="flex items-center space-x-2">
-                    <Play className="w-4 h-4" />
-                    <span>Play</span>
-                  </Button>
+                  <img src={song.coverImageUrl} alt={song.title} className="w-12 h-12" />
                 </div>
               </div>
 
@@ -170,7 +167,7 @@ export function ArtistPage() {
                 <h3 className="text-lg font-semibold">{song.title}</h3>
                 <p className="text-sm text-gray-500">{song.artist.name}</p>
               </div>
-              <div className="flex items-center space-x-2 text-gray-500">
+              <div className="flex items-center space-x-2 text-gray-500 mr-2">
                 <span>{song.viewsCount} vues</span>
               </div>
 

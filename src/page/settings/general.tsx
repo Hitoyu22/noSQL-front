@@ -108,6 +108,7 @@ const Settings: React.FC = () => {
                     placeholder="Entrez votre nom d'utilisateur"
                     {...field}
                     disabled={loading}
+                    className="placeholder:text-black"
                   />
                 </FormControl>
                 <FormDescription>Ceci est votre nom affiché publiquement.</FormDescription>
@@ -127,6 +128,7 @@ const Settings: React.FC = () => {
                     placeholder="Entrez votre adresse email"
                     {...field}
                     disabled={loading}
+                    className="placeholder:text-black"
                   />
                 </FormControl>
                 <FormDescription>Votre adresse email.</FormDescription>

@@ -68,6 +68,7 @@ export function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="placeholder:text-black"
           />
         </div>
         <div className="grid gap-2">
@@ -80,6 +81,7 @@ export function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="placeholder:text-black"
           />
         </div>
         <Button type="submit" className="w-full" disabled={loading}>

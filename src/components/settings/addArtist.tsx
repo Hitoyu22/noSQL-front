@@ -106,7 +106,7 @@ export function AddArtist() {
               id="name"
               value={artistName}
               onChange={(e) => setArtistName(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 
@@ -118,7 +118,7 @@ export function AddArtist() {
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 
@@ -130,7 +130,7 @@ export function AddArtist() {
               id="profilePicture"
               type="file"
               onChange={(e) => setProfilePicture(e.target.files ? e.target.files[0] : null)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 

@@ -106,7 +106,7 @@ export function SearchSongs() {
             placeholder="Rechercher une chanson..."
             value={query}
             onChange={handleChange}
-            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400"
+            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-neutral-500 placeholder:text-black disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400"
           />
         </div>
 

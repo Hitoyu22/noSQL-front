@@ -31,7 +31,7 @@ const artistProfileSchema = z.object({
     .max(160, { message: "La biographie ne peut pas dépasser 160 caractères" }),
   profilePicture: z
     .instanceof(File)
-    .optional(),  // Image peut être optionnelle
+    .optional(), 
   genres: z.array(z.string()).optional(), 
 });
 
@@ -48,7 +48,7 @@ const ArtistProfileSettings: React.FC = () => {
     defaultValues: {
       name: "",
       bio: "",
-      profilePicture: undefined, // Champ d'image par défaut undefined
+      profilePicture: undefined,
       genres: [],
     },
   });
@@ -85,7 +85,7 @@ const ArtistProfileSettings: React.FC = () => {
           form.reset({
             name: response.data.name || "",
             bio: response.data.bio || "",
-            profilePicture: undefined,  // Définit l'image comme undefined (elle ne vient pas encore du formulaire)
+            profilePicture: undefined, 
             genres: response.data.genres || [],
           });
         }
@@ -193,7 +193,7 @@ const ArtistProfileSettings: React.FC = () => {
                   <FormItem>
                     <FormLabel>Nom de l'artiste</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} className="placeholder:text-black" placeholder="Saisissez votre nom" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -207,7 +207,7 @@ const ArtistProfileSettings: React.FC = () => {
                   <FormItem>
                     <FormLabel>Biographie</FormLabel>
                     <FormControl>
-                      <Textarea {...field} />
+                      <Textarea {...field} placeholder="Rédiger votre bio"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -228,6 +228,8 @@ const ArtistProfileSettings: React.FC = () => {
                         onBlur={field.onBlur}
                         name={field.name}
                         ref={field.ref}
+                        className="placeholder:text-black"
+                        placeholder="Choisir une image"
                       />
                     </FormControl>
                     <FormMessage />

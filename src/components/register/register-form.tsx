@@ -56,6 +56,7 @@ export function RegisterForm({
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            className="placeholder:text-black"
           />
         </div>
 
@@ -68,6 +69,7 @@ export function RegisterForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="placeholder:text-black"
           />
         </div>
 
@@ -81,6 +83,7 @@ export function RegisterForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="placeholder:text-black"
           />
         </div>
 

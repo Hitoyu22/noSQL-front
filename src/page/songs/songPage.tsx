@@ -141,7 +141,7 @@ export function SongPage() {
                 id="link"
                 value={songUrl}
                 readOnly
-                className="w-full max-w-[500px] p-2 border border-gray-300 rounded-md"
+                className="w-full max-w-[500px] p-2 border border-gray-300 rounded-md placeholder:text-black"
               />
             </div>
             <Button

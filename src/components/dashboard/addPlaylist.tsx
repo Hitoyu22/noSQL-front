@@ -93,7 +93,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
               id="playlistName"
               value={playlistName}
               onChange={(e) => setPlaylistName(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 
@@ -105,7 +105,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
               id="playlistDescription"
               value={playlistDescription}
               onChange={(e) => setPlaylistDescription(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 
@@ -117,7 +117,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
               id="coverImageUrl"
               type="file"
               onChange={(e) => setCoverImage(e.target.files ? e.target.files[0] : null)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 

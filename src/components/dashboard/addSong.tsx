@@ -106,7 +106,7 @@ export function AddSong({ id }: AddSongProps) {
               id="title"
               value={songTitle}
               onChange={(e) => setSongTitle(e.target.value)}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
 
@@ -138,7 +138,7 @@ export function AddSong({ id }: AddSongProps) {
                 const file = e.target.files ? e.target.files[0] : null;
                 setCoverImage(file);
               }}
-              className="col-span-3"
+              className="col-span-3 placeholder:text-black"
             />
           </div>
         </div>
