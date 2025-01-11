@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchSongs } from "./searchSongs";
+import axiosInstance from "@/context/axiosInstance";
 
 interface Playlist {
   _id: string;
@@ -20,10 +21,14 @@ export function Sidebar({ className }: { className?: string }) {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  const isAnonymous = localStorage.getItem("isAnonymous") === "true";
+  const [artistExists, setArtistExists] = useState(false);
+
+
 
   useEffect(() => {
     const userId = localStorage.getItem("user");
-    if (userId) {
+    if (userId && !isAnonymous) {
       const fetchPlaylists = async () => {
         try {
           const response = await instanceAxios.get(`/playlists/${userId}`);
@@ -35,7 +40,33 @@ export function Sidebar({ className }: { className?: string }) {
         }
       };
       fetchPlaylists();
+    } else {
+      setLoading(false);
     }
+  }, [isAnonymous]);
+
+
+  const [hasSongs, setHasSongs] = useState(false);
+
+  useEffect(() => {
+    const checkArtistProfile = async () => {
+      try {
+        const userId = localStorage.getItem("user");
+        if (!userId) throw new Error("User ID not found");
+
+        const response = await axiosInstance.get(`/artists/user/${userId}`);
+        
+        const artist = response.data;
+        setArtistExists(!!artist);
+
+        setHasSongs(Array.isArray(artist.songs) && artist.songs.length > 0);
+      } catch (error: any) {
+        setArtistExists(false);
+        setHasSongs(false);
+      }
+    };
+
+    checkArtistProfile();
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -56,51 +87,72 @@ export function Sidebar({ className }: { className?: string }) {
             <SearchSongs />
           </div>
         </div>
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Bibliothèque</h2>
-          <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              Fait pour vous
-            </Button>
-            <Button variant="ghost" className="w-full justify-start"
-              onClick={() => navigate(`/artist/favorite`)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
-                <circle cx="17" cy="7" r="5" />
-              </svg>
-              Artistes favoris
-            </Button>
-          </div>
-        </div>
-        <div className="py-2">
-          <h2 className="relative px-7 text-lg font-semibold tracking-tight">Playlists</h2>
-          <ScrollArea className="h-[300px] px-1">
-            <div className="space-y-1 p-2">
-              {playlists?.map((playlist) => (
-                <Button
-                  key={playlist._id}
-                  variant="ghost"
-                  className="w-full justify-start font-normal"
-                  onClick={() => navigate(`/playlist/${playlist._id}`)}
+
+        {!isAnonymous && (
+          <>
+            <div className="px-3 py-2">
+              <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Bibliothèque</h2>
+              <div className="space-y-1">
+                <Button variant="ghost" className="w-full justify-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Fait pour vous
+                </Button>
+                <Button variant="ghost" className="w-full justify-start"
+                  onClick={() => navigate(`/artist/favorite`)}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
-                    <path d="M21 15V6" />
-                    <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-                    <path d="M12 12H3" />
-                    <path d="M16 6H3" />
-                    <path d="M12 18H3" />
+                    <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
+                    <circle cx="17" cy="7" r="5" />
                   </svg>
-                  {playlist.name}
+                  Artistes favoris
                 </Button>
-              ))}
+                {!isAnonymous && artistExists && hasSongs && (
+                <>
+                  <Button variant="ghost" className="w-full justify-start"
+                  onClick={() => navigate(`/artist/my-discography`)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                    <path d="m12 8-9.04 9.06a2.82 2.82 0 1 0 3.98 3.98L16 12" />
+                    <circle cx="17" cy="7" r="5" />
+                  </svg>
+                  Ma discographie
+                </Button>
+                </>  
+                
+                )
+                }
+              </div>
             </div>
-          </ScrollArea>
-        </div>
+
+            <div className="py-2">
+              <h2 className="relative px-7 text-lg font-semibold tracking-tight">Playlists</h2>
+              <ScrollArea className="h-[300px] px-1">
+                <div className="space-y-1 p-2">
+                  {playlists?.map((playlist) => (
+                    <Button
+                      key={playlist._id}
+                      variant="ghost"
+                      className="w-full justify-start font-normal"
+                      onClick={() => navigate(`/playlist/${playlist._id}`)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4">
+                        <path d="M21 15V6" />
+                        <path d="M18.5 18a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                        <path d="M12 12H3" />
+                        <path d="M16 6H3" />
+                        <path d="M12 18H3" />
+                      </svg>
+                      {playlist.name}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

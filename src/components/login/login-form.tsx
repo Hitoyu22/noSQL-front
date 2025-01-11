@@ -46,6 +46,12 @@ export function LoginForm({
     }
   };
 
+  const handleAnonymous = async () => {
+
+    localStorage.setItem("isAnonymous", "true");
+    navigate("/dashboard");
+  }
+
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
@@ -94,6 +100,11 @@ export function LoginForm({
         <a href="/register" className="underline underline-offset-4">
           Inscrivez-vous
         </a>
+      </div>
+      <div className="text-center text-sm">
+        <Button onClick={handleAnonymous}>
+          Accéder en tant qu'anonyme
+          </Button>
       </div>
     </form>
   );

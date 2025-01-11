@@ -41,7 +41,10 @@ export function Musique({
   const [playlists, setPlaylists] = useState<any[]>([]);
   const { toast } = useToast();
 
+  const isAnonymous = localStorage.getItem("isAnonymous") === "true";
+
   useEffect(() => {
+    if (!isAnonymous) {
     const fetchPlaylists = async () => {
       try {
         const userId = localStorage.getItem("user");
@@ -54,24 +57,35 @@ export function Musique({
       } catch (error) {
         console.error("Failed to fetch playlists:", error);
       }
-    };
-    fetchPlaylists();
-  }, []);
+    }
+    ;
+    fetchPlaylists()};
+  }, [isAnonymous]);
 
   const addToPlaylist = async (playlistId: string, song: string) => {
     try {
-      await axiosInstance.post(`/playlists/${playlistId}/songs`, { idSong: song });
+    await axiosInstance.post(`/playlists/${playlistId}/songs`, { idSong: song });
       toast({
         title: "Ajouter à la playlist",
         description: `${album.name} a été ajouté à la playlist.`,
         duration: 4000,
       });
-    } catch (error) {
-      toast({
-        title: "Une erreur est survenue",
-        description: "Une erreur est survenue lors de l'ajout à la playlist.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        return toast({
+          title: "Déjà dans la playlist",
+          description: `${album.name} est déjà dans la playlist.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Une erreur est survenue",
+          description: "Une erreur est survenue lors de l'ajout à la playlist.",
+          variant: "destructive",
+        });
+      }
+
+      
     }
   };
 
@@ -114,43 +128,60 @@ export function Musique({
   return (
     <div className={cn("space-y-3", className)} {...props}>
       <ContextMenu>
-        <ContextMenuTrigger>
-          <div className="overflow-hidden rounded-md">
-            <img
-              src={album.cover}
-              alt={album.name}
-              width={width}
-              height={height}
-              className={cn(
-                "h-auto w-auto object-cover transition-all hover:scale-105",
-                aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square"
-              )}
-            />
-          </div>
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-40">
-          <ContextMenuSub>
-            <ContextMenuSubTrigger>Ajouter à une playlist</ContextMenuSubTrigger>
-            <ContextMenuSubContent className="w-48">
-              <AddPlaylist userId={localStorage.getItem("user") || ""} />
-              <ContextMenuSeparator />
-              {playlists.map((playlist) => (
-                <ContextMenuItem
-                  key={playlist._id}
-                  onClick={() => song && addToPlaylist(playlist._id, song)}
-                >
-                  {playlist.name}
-                </ContextMenuItem>
-              ))}
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-          <ContextMenuSeparator />
-          <ContextMenuItem>Ecouter ensuite</ContextMenuItem>
-          <ContextMenuItem>Ecouter plus tard</ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={handleShare}>Partager</ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+  <ContextMenuTrigger
+    onClick={(e) => e.stopPropagation()}
+  >
+    <div className="overflow-hidden rounded-md">
+      <img
+        src={album.cover}
+        alt={album.name}
+        width={width}
+        height={height}
+        className={cn(
+          "h-auto w-auto object-cover transition-all hover:scale-105",
+          aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square"
+        )}
+      />
+    </div>
+  </ContextMenuTrigger>
+  <ContextMenuContent className="w-40">
+    <ContextMenuSub>
+      <ContextMenuSubTrigger>Ajouter à une playlist</ContextMenuSubTrigger>
+      <ContextMenuSubContent className="w-48">
+        <AddPlaylist userId={localStorage.getItem("user") || ""} />
+        <ContextMenuSeparator />
+        {playlists.map((playlist) => (
+          <ContextMenuItem
+            key={playlist._id}
+            onClick={(e) => {
+              e.stopPropagation();
+              song && addToPlaylist(playlist._id, song);
+            }}
+          >
+            {playlist.name}
+          </ContextMenuItem>
+        ))}
+      </ContextMenuSubContent>
+    </ContextMenuSub>
+    <ContextMenuSeparator />
+    <ContextMenuItem onClick={(e) => e.stopPropagation()}>
+      Écouter ensuite
+    </ContextMenuItem>
+    <ContextMenuItem onClick={(e) => e.stopPropagation()}>
+      Écouter plus tard
+    </ContextMenuItem>
+    <ContextMenuSeparator />
+    <ContextMenuItem
+      onClick={(e) => {
+        e.stopPropagation();
+        handleShare();
+      }}
+    >
+      Partager
+    </ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+
       <div className="space-y-1 text-sm">
         <h3 className="font-medium leading-none">{album.name}</h3>
         <p className="text-xs text-muted-foreground">{album.artist}</p>

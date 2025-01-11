@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/multi-select"; 
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const artistProfileSchema = z.object({
   name: z
@@ -107,6 +108,33 @@ const ArtistProfileSettings: React.FC = () => {
     checkArtistProfile();
   }, [form]);
 
+
+  const deleteArtistProfile = async () => {
+
+    try {
+      if (!artistProfile?._id) {
+        throw new Error("ID utilisateur ou ID artiste manquant");
+      }
+
+      await axiosInstance.delete(`/artists/${artistProfile._id}`);
+
+      toast({
+        title: "Succès",
+        description: "Profil d'artiste supprimé avec succès.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Échec de la suppression du profil.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      window.location.reload();
+    }
+  }
+
   const onSubmit = async (data: ArtistProfileFormValues) => {
     try {
       setLoading(true);
@@ -154,7 +182,7 @@ const ArtistProfileSettings: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col gap-8 bg-muted/">
+    <div className="flex min-h-screen flex-col gap-8 bg-muted/ p-10">
       <div className="mx-auto grid w-full max-w-6xl gap-2">
         <h1 className="text-3xl font-semibold">Paramètres</h1>
       </div>
@@ -184,6 +212,7 @@ const ArtistProfileSettings: React.FC = () => {
                   <AddArtist />
                 </div>
               ) : (
+                <>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -266,7 +295,31 @@ const ArtistProfileSettings: React.FC = () => {
               </div>
             </form>
           </Form>
+
+          <div>
+        <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Supprimer le profil</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Supprimer le profil</DialogTitle>
+          <DialogDescription>
+            Si vous supprimez votre profil, toutes vos musiques n'existeront plus.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button onClick={deleteArtistProfile}>Supprimer</Button>
+          <Button variant={"ghost"}>Annuler</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+        </div>
+</>
         )}
+
+        
         </CardContent>
       </Card>
     </div>

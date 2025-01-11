@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import axiosInstance from "@/context/axiosInstance";
 
-interface AddPlaylistProps {
-  userId: string;
+interface EditPlaylistProps {
+  playlistId: string;
 }
 
-export function AddPlaylist({ userId }: AddPlaylistProps) {
+export function EditPlaylist({ playlistId }: EditPlaylistProps) {
   const [playlistName, setPlaylistName] = useState<string>("");
   const [playlistDescription, setPlaylistDescription] = useState<string>("");
   const [isPublic, setIsPublic] = useState<boolean>(false);
@@ -28,13 +28,23 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const resetForm = () => {
-    setPlaylistName("");
-    setPlaylistDescription("");
-    setIsPublic(false);
-    setCoverImage(null);
-    setIsSuccess(false);
-  };
+  useEffect(() => {
+    const fetchPlaylist = async () => {
+      try {
+        const response = await axiosInstance.get(`/playlists/one/${playlistId}`);
+        const { name, description, isPublic } = response.data;
+        setPlaylistName(name);
+        setPlaylistDescription(description);
+        setIsPublic(isPublic);
+
+        console.log("Playlist récupérée avec succès :", response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la playlist :", error);
+      }
+    };
+
+    fetchPlaylist();
+  }, [playlistId]);
 
   const handleSave = async () => {
     if (!playlistName || !playlistDescription) {
@@ -47,23 +57,22 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
     formData.append("name", playlistName);
     formData.append("description", playlistDescription);
     formData.append("isPublic", isPublic.toString());
-    formData.append("user", userId);
 
     if (coverImage) {
       formData.append("coverImageUrl", coverImage);
     }
 
     try {
-      const response = await axiosInstance.post("/playlists/", formData, {
+      const response = await axiosInstance.put(`/playlists/${playlistId}/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Playlist ajoutée avec succès:", response.data);
+      console.log("Playlist modifiée avec succès :", response.data);
       setIsSuccess(true);
       window.location.reload();
     } catch (error) {
-      console.error("Erreur lors de l'ajout de la playlist:", error);
+      console.error("Erreur lors de la modification de la playlist :", error);
     } finally {
       setIsLoading(false);
     }
@@ -74,14 +83,14 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
       <DialogTrigger asChild>
         <Button variant={"empty"}>
           <PlusCircle />
-          Ajouter une playlist
+          Modifier la playlist
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[650px] overflow-visible">
         <DialogHeader>
-          <DialogTitle>Nouvelle playlist</DialogTitle>
+          <DialogTitle>Modifier playlist</DialogTitle>
           <DialogDescription>
-            Ajoutez une nouvelle playlist à la plateforme. Remplissez le formulaire ci-dessous et cliquez sur "Enregistrer".
+            Modifiez les informations de votre playlist ci-dessous et cliquez sur "Enregistrer".
           </DialogDescription>
         </DialogHeader>
 
@@ -112,7 +121,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="coverImageUrl" className="text-right">
-              Image de couverture
+              Nouvelle image de couverture
             </Label>
             <Input
               id="coverImageUrl"
@@ -142,7 +151,7 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
             asChild
             onClick={() => {
               if (isSuccess) {
-                resetForm();
+                setIsSuccess(false);
               }
             }}
           >
@@ -151,14 +160,14 @@ export function AddPlaylist({ userId }: AddPlaylistProps) {
             onClick={handleSave}
             disabled={isLoading}
           >
-            {isLoading ? "Enregistrement..." : "Enregistrer la playlist"}
+            {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
           </Button>
           </DialogClose>
           <DialogClose
             asChild
             onClick={() => {
               if (isSuccess) {
-                resetForm();
+                setIsSuccess(false);
               }
             }}
           >

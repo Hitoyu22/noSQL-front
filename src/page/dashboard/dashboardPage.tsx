@@ -6,6 +6,7 @@ import { AddSong } from "@/components/dashboard/addSong";
 import axiosInstance from "@/context/axiosInstance";
 import { useEffect, useState } from "react";
 import {Playlist} from "@/components/dashboard/playlist";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const [artistExists, setArtistExists] = useState(false);
@@ -50,24 +51,30 @@ export default function Dashboard() {
     fetchRecommendations();
   }, []);
 
-  useEffect(() => {
-    const fetchPlaylist = async () => {
-      try {
-        const userId = localStorage.getItem("user");
-        const response = await axiosInstance.get(`/playlists/${userId}/`);
-        const Playlist = response.data.map((album: any) => ({
-          _id : album._id,
-          name: album.name,
-          cover: album.coverImageUrl,
-        }));
-        setPlaylists(Playlist);
-      } catch (error) {
-        console.error("Failed to fetch recommendations:", error);
-      }
-    };
+  const isAnonymous = localStorage.getItem("isAnonymous") === "true";
 
-    fetchPlaylist();
-  }, []);
+
+  useEffect(() => {
+    if (!isAnonymous) {
+      const fetchPlaylist = async () => {
+        try {
+          const userId = localStorage.getItem("user");
+          const response = await axiosInstance.get(`/playlists/${userId}/`);
+          const Playlist = response.data.map((album: any) => ({
+            _id : album._id,
+            name: album.name,
+            cover: album.coverImageUrl,
+          }));
+          setPlaylists(Playlist);
+        } catch (error) {
+          console.error("Failed to fetch playlists:", error);
+        }
+      };
+
+      fetchPlaylist();
+    }
+  }, [isAnonymous]);
+
 
   return (
     <>
@@ -115,49 +122,57 @@ export default function Dashboard() {
                       <Separator className="my-4" />
                       <div className="relative">
                         <ScrollArea>
-                          <div className="flex space-x-4 pb-4">
-                            {recommendedAlbums.map((album, index) => (
-                              <Musique
-                                key={index}
-                                album={album}
-                                className="w-[250px]"
-                                aspectRatio="portrait"
-                                width={250}
-                                height={330}
-                                song={album._id}
-                              />
-                            ))}
-                          </div>
+                        <div className="flex space-x-4 pb-4">
+                          {recommendedAlbums.map((album) => (
+                            <div key={album._id}>
+                              <Link to={`/song/${album._id}`}>
+                                <Musique
+                                  album={album}
+                                  className="w-[250px]"
+                                  aspectRatio="square"
+                                  width={250}
+                                  height={250}
+                                  song={album._id}
+                                />
+                              </Link>
+                            </div>
+                          ))}
+                        </div>
                           <ScrollBar orientation="horizontal" />
                         </ScrollArea>
                       </div>
+                      {(!isAnonymous && Array.isArray(playlists) && playlists.length > 0) ? (
+  <>
+    <div className="mt-6 space-y-1">
+      <h2 className="text-2xl font-semibold tracking-tight">
+        Créé pour vous
+      </h2>
+      <p className="text-sm text-muted-foreground">
+        Vos playlists personnelles. Mise à jour quotidienne.
+      </p>
+    </div>
+    <Separator className="my-4" />
+    <div className="relative">
+      <ScrollArea>
+        <div className="flex space-x-4 pb-4">
+          {playlists.map((playlist, index) => (
+            <Playlist
+              key={index}
+              playlist={playlist}
+              className="w-[150px]"
+              aspectRatio="square"
+              width={150}
+              height={150}
+            />
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+    </div>
+  </>
+) : null}
 
-                      <div className="mt-6 space-y-1">
-                        <h2 className="text-2xl font-semibold tracking-tight">
-                          Créé pour vous
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                          Vos playlists personnelles. Mise à jour quotidienne.
-                        </p>
-                      </div>
-                      <Separator className="my-4" />
-                      <div className="relative">
-                        <ScrollArea>
-                          <div className="flex space-x-4 pb-4">
-                            {playlists.map((playlists, index) => (
-                              <Playlist
-                                key={index}
-                                playlist={playlists}
-                                className="w-[150px]"
-                                aspectRatio="square"
-                                width={150}
-                                height={150}
-                              />
-                            ))}
-                          </div>
-                          <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                      </div>
+                      
                     </div>
                   </div>
                 </div>

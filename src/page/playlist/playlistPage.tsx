@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import instanceAxios from "@/context/axiosInstance";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +16,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
-
+import { EditPlaylist } from "@/components/edit-playlist";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 interface Genre {
   _id: string;
   name: string;
@@ -63,6 +62,8 @@ export function PlaylistPage() {
 
   const userId = localStorage.getItem("user");
 
+  const nav = useNavigate();
+
   useEffect(() => {
     if (id) {
       const fetchPlaylist = async () => {
@@ -98,7 +99,22 @@ export function PlaylistPage() {
       console.error("Erreur lors de la lecture de la chanson", error);
       toast({ title: "Erreur lors de la lecture", variant: "destructive" });
     }
+
+    window.location.reload();
   };
+
+  const deletePlaylist = async () => {
+    if (playlist) {
+      try {
+        await instanceAxios.delete(`/playlists/${playlist._id}`);
+        toast({ title: "Playlist supprimée avec succès" });
+        setPlaylist(null);
+        nav("/dashboard");
+      } catch (error) {
+        toast({ title: "Erreur lors de la suppression de la playlist", variant: "destructive" });
+      }
+    }
+  }
 
   const removeSongFromPlaylist = async (songId: string) => {
     if (playlist) {
@@ -172,6 +188,30 @@ export function PlaylistPage() {
               <p className="text-sm text-gray-600">{playlist.songs.length} musique(s)</p>
             </div>
           </div>
+          {id && <EditPlaylist playlistId={id} />}
+          <>
+          <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">Supprimer la playlist</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Suppression de la playlist</DialogTitle>
+          <DialogDescription>
+            Êtes-vous sûr de vouloir supprimer cette playlist ? Cette action est irréversible.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+          <Button onClick={deletePlaylist}>Supprimer</Button>
+          </DialogClose>
+          <DialogClose asChild>
+          <Button variant={"outline"}>Annuler</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+          </>
         </div>
 
         <div className="space-y-4">
@@ -185,7 +225,7 @@ export function PlaylistPage() {
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" onClick={() => addListen(song)} className="flex items-center space-x-2">
                     <Play className="w-4 h-4" />
-                    <span>Play</span>
+                    <span>Lancer</span>
                   </Button>
                 </div>
               </div>

@@ -74,6 +74,7 @@ export function AddSong({ id }: AddSongProps) {
       });
       console.log("Chanson ajoutée avec succès:", response.data);
       setIsSuccess(true);
+      window.location.reload();
     } catch (error) {
       console.error("Erreur lors de l'ajout de la chanson:", error);
     } finally {
@@ -144,13 +145,23 @@ export function AddSong({ id }: AddSongProps) {
         </div>
 
         <DialogFooter>
+        <DialogClose
+            asChild
+            onClick={() => {
+              if (isSuccess) {
+                resetForm();
+              }
+            }}
+          >
           <Button
             type="button"
             onClick={handleSave}
             disabled={isLoading}
           >
+          
             {isLoading ? "Enregistrement..." : "Enregistrer la chanson"}
           </Button>
+          </DialogClose>
           <DialogClose
             asChild
             onClick={() => {

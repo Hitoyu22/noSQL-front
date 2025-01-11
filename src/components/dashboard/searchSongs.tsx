@@ -1,11 +1,12 @@
-"use client";
-
 import * as React from "react";
 import { Button } from "@/components/ui/button"; 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import instanceAxios from "@/context/axiosInstance"; 
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 interface Artist {
   name: string;
@@ -18,46 +19,93 @@ interface Song {
   artist: Artist;
 }
 
+interface Genre {
+  _id: string;
+  name: string;
+}
+
 export function SearchSongs() {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState(""); 
   const [songs, setSongs] = React.useState<Song[]>([]); 
+  const [genres, setGenres] = React.useState<Genre[]>([]); 
+  const [selectedGenre, setSelectedGenre] = React.useState<string>(""); 
   const [error, setError] = React.useState<string | null>(null); 
+  const [searchType, setSearchType] = React.useState<"text" | "genre">("text");
 
   const toggleCommandMenu = () => {
     setOpen((prevState) => !prevState);
   };
 
   const handleSearch = React.useCallback(
-    async (searchQuery: string) => {
+    async (searchQuery: string, genre: string) => {
       try {
-        const response = await instanceAxios.get(`/songs/search?query=${searchQuery}`);
-        setSongs(response.data); 
-        setError(null); 
+        let url = "";
+  
+        if (searchType === "text") {
+          url = `/songs/search?query=${searchQuery}`;
+        }
+        else if (searchType === "genre" && genre) {
+          url = `/songs/genre/${genre}`;
+        }
+  
+        const response = await instanceAxios.get(url);
+  
+        if (response.status === 404) {
+          setError("Aucune musique ne correspond.");
+          setSongs([]);
+          return;
+        }
+  
+        setSongs(response.data);
+        setError(null);
       } catch (error) {
-        setError("Aucune musique ne correspond."); 
+        if (axios.isAxiosError(error) && error.response && error.response.status === 404) {
+          console.clear();
+        }
+        setError("Aucune musique ne correspond.");
+        setSongs([]);
       }
     },
-    []
+    [searchType]
   );
+  
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      handleSearch(query);
+      handleSearch(query, selectedGenre);
     }, 200); 
 
     return () => clearTimeout(timer);
-  }, [query, handleSearch]);
+  }, [query, selectedGenre, handleSearch]);
 
   React.useEffect(() => {
     if (open) {
-      handleSearch(""); 
+      handleSearch("", ""); 
     }
   }, [open, handleSearch]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value); 
   };
+
+  const handleGenreChange = (value: string) => {
+    setSelectedGenre(value);
+    handleSearch(query, value); 
+  };
+
+  React.useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await instanceAxios.get("/genre");
+        setGenres(response.data);
+      } catch (error) {
+        console.error("Error fetching genres:", error);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -93,50 +141,80 @@ export function SearchSongs() {
       )}
 
       <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader className="hidden">
-          <DialogTitle>Nouvelle chanson</DialogTitle>
+        <DialogHeader className="hidden">
+          <DialogTitle>Rechercher une chanson</DialogTitle>
           <DialogDescription>
-            Ajoutez une nouvelle chanson à la plateforme. Remplissez le formulaire ci-dessous et cliquez sur "Enregistrer".
+            Rechercher une chanson pour l'ajouter à votre playlist
           </DialogDescription>
         </DialogHeader>
-        <div className="flex items-center border-b px-3 py-4">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <input
-            type="text"
-            placeholder="Rechercher une chanson..."
-            value={query}
-            onChange={handleChange}
-            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-neutral-500 placeholder:text-black disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400"
-          />
-        </div>
+
+        <Tabs defaultValue="text" onValueChange={(value) => setSearchType(value as "text" | "genre")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="text">Recherche textuelle</TabsTrigger>
+            <TabsTrigger value="genre">Recherche par genre</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="text">
+            <div className="flex items-center border-b px-3 py-4">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <input
+                type="text"
+                placeholder="Rechercher une chanson..."
+                value={query}
+                onChange={handleChange}
+                className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-neutral-500 placeholder:text-black disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400"
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="genre">
+            <div className="mt-4">
+              <Select onValueChange={handleGenreChange} value={selectedGenre}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir un genre" />
+                </SelectTrigger>
+                <SelectContent>
+                  {genres.map((genre) => (
+                    <SelectItem key={genre._id} value={genre._id}>
+                      {genre.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <div className="mt-4 max-h-72 overflow-y-auto">
-          {error ? (
-            <p>{error}</p>
-          ) : songs.length === 0 ? (
-            <p>Aucune musique ne correspond à votre recherche</p>
-          ) : (
-            songs.slice(0, 3).map((song) => ( 
-              <Link key={song._id} to={`/song/${song._id}`}>
-                <div className="flex items-center space-x-4 p-2 hover:bg-gray-100 cursor-pointer transition-colors">
-                  <img
-                    src={song.coverImageUrl}
-                    alt={song.title}
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                  <div>
-                    <span className="font-semibold">{song.title}</span>
-                    {song.artist && song.artist.name ? (
-                      <div className="text-sm text-gray-500">{song.artist.name}</div>
-                    ) : (
-                      <div className="text-sm text-gray-500">Artiste inconnu</div> 
-                    )}
-                  </div>
-                </div>
-              </Link>
-            )))
-          }
+  {error ? (
+    <p>{error}</p>
+  ) : Array.isArray(songs) && songs.length === 0 ? (
+    <p>Aucune musique ne correspond à votre recherche</p>
+  ) : Array.isArray(songs) && songs.length > 0 ? (
+    songs.slice(0, 3).map((song) => (
+      <Link key={song._id} to={`/song/${song._id}`}>
+        <div className="flex items-center space-x-4 p-2 hover:bg-gray-100 cursor-pointer transition-colors">
+          <img
+            src={song.coverImageUrl}
+            alt={song.title}
+            className="w-16 h-16 object-cover rounded-md"
+          />
+          <div>
+            <span className="font-semibold">{song.title}</span>
+            {song.artist && song.artist.name ? (
+              <div className="text-sm text-gray-500">{song.artist.name}</div>
+            ) : (
+              <div className="text-sm text-gray-500">Artiste inconnu</div>
+            )}
+          </div>
         </div>
+      </Link>
+    ))
+  ) : (
+    <p>Aucune musique n'a pu être trouvée</p>
+  )}
+</div>
+
       </DialogContent>
     </Dialog>
   );

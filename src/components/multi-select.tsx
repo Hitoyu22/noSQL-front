@@ -1,3 +1,5 @@
+// Composant récupérer de https://github.com/mxkaske/mxkaske.dev/blob/main/components/craft/fancy-multi-select.tsx
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {

@@ -1,7 +1,7 @@
 
 function LogoutPage() {
 
-    localStorage.removeItem("token");
+    localStorage.clear();
   
     window.location.href = "/login";
   

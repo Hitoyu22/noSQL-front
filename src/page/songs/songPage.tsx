@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import instanceAxios from "@/context/axiosInstance";
@@ -105,17 +103,20 @@ export function SongPage() {
         toast({
           title: "Erreur",
           description: "Cette chanson est déjà dans cette playlist.",
-          variant: "destructive",
+          duration: 4000,
         });
       } else {
         toast({
           title: "Erreur",
           description: "Une erreur s'est produite lors de l'ajout de la chanson.",
           variant: "destructive",
+          duration: 4000,
         });
       }
     }
   };
+
+  const isAnonymous = localStorage.getItem("isAnonymous") === "true";
 
   const addListen = async () => {
     if (!song) return;
@@ -125,6 +126,8 @@ export function SongPage() {
       console.log("Chanson en cours de lecture !");
     } catch (error) {
       console.error("Erreur lors de la lecture de la chanson", error);
+    } finally {
+      window.location.reload();
     }
   };
 
@@ -222,7 +225,8 @@ export function SongPage() {
             <DropdownMenuContent className="w-56">
               <DropdownMenuLabel>Options</DropdownMenuLabel>
               <DropdownMenuGroup>
-                <DropdownMenuSub>
+                {!isAnonymous && ( 
+                  <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <span>Ajouter à une playlist</span>
                   </DropdownMenuSubTrigger>
@@ -237,6 +241,7 @@ export function SongPage() {
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
+                )}
                 <DropdownMenuItem onClick={handleAddToQueue}>
                   <span>Ajouter à la file d'attente</span>
                 </DropdownMenuItem>
@@ -253,16 +258,16 @@ export function SongPage() {
           </DropdownMenu>
         </div>
 
-        <div className="mt-4 flex space-x-4">
-          {song.genre.map((g) => (
-            <Badge
-              key={g._id}
-              className="bg-gray-200 text-black py-1 px-4 rounded-full text-sm"
-            >
-              {g.name}
-            </Badge>
-          ))}
-        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+            {song.genre.map((g) => (
+              <Badge
+                key={g._id}
+                className="bg-gray-200 text-black py-1 px-4 rounded-full text-sm whitespace-nowrap"
+              >
+                {g.name}
+              </Badge>
+            ))}
+          </div>
 
         <div className="mt-6">
           <Button onClick={addListen}>Lancer la musique</Button>

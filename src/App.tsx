@@ -10,7 +10,10 @@ import { ArtistPage } from "./page/artist/artistPage";
 import { PlaylistPage } from "./page/playlist/playlistPage";
 import { Toaster } from "./components/ui/toaster";
 import { FavoriteArtistsPage } from "./page/artist/favoriteArtistePage";
-import  LogoutPage  from "./page/login/logoutPage";
+import LogoutPage from "./page/login/logoutPage";
+import { MyDiscographyPage } from "./page/songs/myDiscography";
+import LandingPage from "./page/landingPage";
+import NotFoundPage from "./page/404Page";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const token = localStorage.getItem("token");
@@ -19,44 +22,87 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
     return <Navigate to="/login" />;
   }
 
-  return <div>{children}</div>;
+  return <div>
+    <Menu />
+    
+    {children}</div>;
 }
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path='/logout' element={<LogoutPage />} />
-
+      <Route path="/logout" element={<LogoutPage />} />
+      
       <Route
-        path="/*"
+        path="/dashboard"
         element={
           <ProtectedRoute>
-            <ProtectedLayout />
+            <Dashboard />
           </ProtectedRoute>
         }
       />
-
-      <Route path="*" element={<div>Page non trouvée</div>} />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/artist-profile"
+        element={
+          <ProtectedRoute>
+            <ArtistProfileSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/song/:id"
+        element={
+          <ProtectedRoute>
+            <SongPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/artist/:id"
+        element={
+          <ProtectedRoute>
+            <ArtistPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/playlist/:id"
+        element={
+          <ProtectedRoute>
+            <PlaylistPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/artist/favorite"
+        element={
+          <ProtectedRoute>
+            <FavoriteArtistsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/artist/my-discography"
+        element={
+          <ProtectedRoute>
+            <MyDiscographyPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
-  );
-}
-
-function ProtectedLayout() {
-  return (
-    <div>
-      <Menu />
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/settings" element={<SettingsForm />} />
-        <Route path="/settings/artist-profile" element={<ArtistProfileSettings />} />
-        <Route path="/song/:id" element={<SongPage />}/>
-        <Route path="/artist/:id" element={<ArtistPage />}/>
-        <Route path="/playlist/:id" element={<PlaylistPage />}/>
-        <Route path="/artist/favorite" element={<FavoriteArtistsPage />} />
-      </Routes>
-    </div>
   );
 }
 

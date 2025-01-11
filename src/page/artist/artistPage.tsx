@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import instanceAxios from "@/context/axiosInstance";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -41,6 +39,7 @@ export function ArtistPage() {
   const { toast } = useToast();
 
   const userId = localStorage.getItem("user");
+  const isAnonymous = localStorage.getItem("isAnonymous") === "true";
 
   useEffect(() => {
     if (id) {
@@ -64,23 +63,24 @@ export function ArtistPage() {
             return;
           }
 
-          try {
-            const followResponse = await instanceAxios.get(`/users/${userId}/favorite-artists`);
-          
-            const favoriteArtists = followResponse.data?.favoriteArtists || [];
-          
-            if (!Array.isArray(favoriteArtists)) {
-              throw new Error("Structure inattendue de la réponse");
+          if (!isAnonymous && userId) {
+            try {
+              const followResponse = await instanceAxios.get(`/users/${userId}/favorite-artists`);
+            
+              const favoriteArtists = followResponse.data?.favoriteArtists || [];
+            
+              if (!Array.isArray(favoriteArtists)) {
+                throw new Error("Structure inattendue de la réponse");
+              }
+            
+              setIsFollowing(favoriteArtists.some((favorite: any) => favorite._id === id));
+            } catch (error) {
+              console.error("Erreur:", error);
+              setError("Erreur lors de la vérification de l'abonnement.");
+              toast({ title: "Erreur lors de la vérification de l'abonnement.", variant: "destructive" });
+              return;
             }
-          
-            setIsFollowing(favoriteArtists.some((favorite: any) => favorite._id === id));
-          } catch (error) {
-            console.error("Erreur:", error);
-            setError("Erreur lors de la vérification de l'abonnement.");
-            toast({ title: "Erreur lors de la vérification de l'abonnement.", variant: "destructive" });
-            return;
           }
-
         } catch (err) {
           setError("Erreur générale lors du chargement des données.");
           toast({ title: "Erreur générale", variant: "destructive" });
@@ -91,7 +91,7 @@ export function ArtistPage() {
 
       fetchArtistData();
     }
-  }, [id, userId]);
+  }, [id, userId, isAnonymous]);
 
   const followArtist = async () => {
     try {
@@ -142,10 +142,12 @@ export function ArtistPage() {
             </div>
           </div>
           <div>
-            {isFollowing ? (
-              <Button variant="outline" onClick={unfollowArtist}>Se désabonner</Button>
-            ) : (
-              <Button variant="outline" onClick={followArtist}>S'abonner</Button>
+            {!isAnonymous && (
+              isFollowing ? (
+                <Button variant="outline" onClick={unfollowArtist}>Se désabonner</Button>
+              ) : (
+                <Button variant="outline" onClick={followArtist}>S'abonner</Button>
+              )
             )}
           </div>
         </div>
@@ -181,7 +183,11 @@ export function ArtistPage() {
                   <DropdownMenuLabel>Options</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuItem>
-                      <span>Ajouter à une playlist</span>
+                          <Link to={`/songs/${song._id}`}>
+                        <DropdownMenuItem>
+                          <span>Accéder à la musique</span>
+                        </DropdownMenuItem>
+                      </Link>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>

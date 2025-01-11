@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,7 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import axiosInstance from "@/context/axiosInstance";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const profileFormSchema = z.object({
   username: z
@@ -77,6 +76,99 @@ const Settings: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const [artistExists, setArtistExists] = useState(false);
+    const [artistProfile, setArtistProfile] = useState<any>(null);
+  
+
+  useEffect(() => {
+    const checkArtistProfile = async () => {
+      try {
+        const userId = localStorage.getItem("user");
+        if (!userId) {
+          throw new Error("User ID not found in localStorage");
+        }
+
+        const response = await axiosInstance.get(`/artists/user/${userId}`);
+        if (response.status === 200) {
+          setArtistExists(true);
+          setArtistProfile(response.data);
+        }
+      } catch (error: any) {
+        if (error.response?.status === 404 || error.response?.status === 204) {
+          setArtistExists(false);
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la vérification du profil artiste.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkArtistProfile();
+  }, [form]);
+
+  const deleteArtistProfile = async () => {
+
+    try {
+      if (!artistProfile?._id) {
+        throw new Error("ID utilisateur ou ID artiste manquant");
+      }
+
+      await axiosInstance.delete(`/artists/${artistProfile._id}`);
+
+      toast({
+        title: "Succès",
+        description: "Profil d'artiste supprimé avec succès.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Échec de la suppression du profil.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      window.location.reload();
+    }
+  };
+
+  const nav = useNavigate();
+
+  const deleteAccount = async () => {
+
+
+    if (artistExists) {
+      try {
+        setLoading(true);
+        await deleteArtistProfile();
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Échec de la suppression du profil artiste.",
+          variant: "destructive",
+        });
+      }
+    }
+
+
+    try {
+      setLoading(true);
+      await axiosInstance.delete(`/users/`);
+      toast({ title: "Success", description: "Account deleted successfully.", variant: "default" });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete account.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+      nav("/");
+    }
+
+  }
 
   return (
     <div className="flex min-h-screen flex-col gap-8 bg-muted/40 p-10">
@@ -157,11 +249,30 @@ const Settings: React.FC = () => {
             )}
           />
 
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" className="mb-4" disabled={loading}>
             {loading ? "Enregistrement..." : "Mettre à jour le profil"}
           </Button>
         </form>
       </Form>
+
+      <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive" className="mt-2">Supprimer le compte</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Supprimer le compte</DialogTitle>
+          <DialogDescription>
+            Si vous supprimez votre compte, toutes vos données seront perdues. Êtes-vous sûr de vouloir continuer ?
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button onClick={deleteAccount}>Supprimer</Button>
+          <Button variant={"ghost"}>Annuler</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </CardContent>
   </Card>
 </div>

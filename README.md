@@ -1,50 +1,75 @@
-# React + TypeScript + Vite
+# Projet NoSQL - Partie Front 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Groupe 2 : 
+- Rémy THIBAUT
+- Ana Fernandes
 
-Currently, two official plugins are available:
+## Présentation du projet 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Le projet consiste à recréer une application de musique comme Spotify en permettant d'ajouter des musiques, des artistes, d'aimer des chansons et même de les écouter.
 
-## Expanding the ESLint configuration
+Ce projet contient le frontend de l'application. 
+Le backend se trouve à cette adresse : https://github.com/Hitoyu22/NoSQL-back 
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Dépendances du projet 
 
-- Configure the top-level `parserOptions` property like this:
+Les librairies utilisées pour ce projet sont : 
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Shadcn** UI pour l'UI générale de l'application avec Tailwind CSS
+- **Axios** pour les appels APIs
+- **Lucide-React** pour les icones 
+
+
+## Installation et lancement du projet
+
+Pour lancer se projet, il faut déjà avoir le backend de configurer et de lancer. 
+
+### Télécharger le projet 
+
+Pour télécharger le projet, il vous suffit de faire la commande suivante 
+
+```bash
+git clone https://github.com/Hitoyu22/noSQL-front
+cd noSQL-front
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Installer les dépendances 
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Pour installer les dépendances, il faut avoir au préalable : 
+- **Node JS** (version 20 ou supérieur)
+- **NPM** (version 10 ou supérieur) 
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+Il ne vous reste ensuite plus qu'à lancer la commande suivante pour installer les dépendances du projet : 
+
+```bash
+npm install
 ```
+
+### Configuration des variables d'environnements
+
+Pour lancer le projet, ce dernier doit pouvoir se connecter au serveur.
+
+Vous avez besoin d'un fichier d'environnement .env pour utiliser le projet en mode développement : 
+
+```bash
+touch .env
+```
+
+Et ajoutez les variables suivantes : 
+
+- **VITE_API_BASE_URL** : correspond à l'adresse du back que vous avez lancé (par exemple **http://localhost:3000**)
+
+### Lancer le projet 
+
+Une fois toutes les étapes précédentes effectuées, vous n'avez plus qu'à lancer la commande suivante pour accéder au front (par défaut, l'url du front sera **http://localhost:5173**) : 
+
+```bash
+npm run dev 
+```
+
+### Se connecter à l'application 
+
+Un jeu de données sera déjà importé dans le back, un compte utilisateur a déjà été créé pour tester l'ensemble des fonctionnalités rapidement : 
+
+- Email : **demo.projet@esgi.fr**
+- Mot de passe : **test**
