@@ -19,7 +19,12 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   const token = localStorage.getItem("token");
 
   if (!token) {
-    return <Navigate to="/login" />;
+
+    const isAnonymous = localStorage.getItem("isAnonymous");
+    if (!isAnonymous) {
+      return <Navigate to="/login" />;
+    }  
+
   }
 
   return <div>

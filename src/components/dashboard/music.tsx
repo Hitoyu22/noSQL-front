@@ -145,7 +145,9 @@ export function Musique({
     </div>
   </ContextMenuTrigger>
   <ContextMenuContent className="w-40">
-    <ContextMenuSub>
+    {!isAnonymous ? (
+      <>
+      <ContextMenuSub>
       <ContextMenuSubTrigger>Ajouter à une playlist</ContextMenuSubTrigger>
       <ContextMenuSubContent className="w-48">
         <AddPlaylist userId={localStorage.getItem("user") || ""} />
@@ -164,6 +166,11 @@ export function Musique({
       </ContextMenuSubContent>
     </ContextMenuSub>
     <ContextMenuSeparator />
+    </>
+    ) : null
+    }
+    
+    
     <ContextMenuItem onClick={(e) => e.stopPropagation()}>
       Écouter ensuite
     </ContextMenuItem>

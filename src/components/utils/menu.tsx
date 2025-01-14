@@ -89,7 +89,9 @@ export function Menu() {
             </>
           )}
           <Link to="/logout">
-            <MenubarItem>Déconnexion</MenubarItem>
+            <MenubarItem>
+              {isAnonymous ? "Quitter" : "Déconnexion"}
+             </MenubarItem>
           </Link>
         </MenubarContent>
       </MenubarMenu>
